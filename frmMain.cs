@@ -35,16 +35,6 @@ namespace OpenSSTP
 
         private void frmMain_Load(object sender, EventArgs e)
         {
-            if (IsConnected())
-            {
-                this.picConnection.Image = global::OpenSSTP.Properties.Resources.ON;
-                lblStatus.Text = "VPN Connection already running";
-            }
-            else
-            {
-                Disconnect();
-            }
-
             this.server = BAL.Server.LoadConfigFromFile();
 
             if (server != null)
@@ -53,6 +43,17 @@ namespace OpenSSTP
                 this.lblHost.Text = server.HOSTNAME;
 
                 picFlag.ImageLocation = server.FLAG;
+            }
+
+
+            if (IsConnected())
+            {
+                this.picConnection.Image = global::OpenSSTP.Properties.Resources.ON;
+                lblStatus.Text = "VPN Connection already running";
+            }
+            else
+            {
+                Disconnect();
             }
 
             _ = CheckUpdateAsync();
@@ -119,47 +120,54 @@ namespace OpenSSTP
             return isConnected;
         }
 
+        public void CreateConnection()
+        {
+            this.picConnection.Image = global::OpenSSTP.Properties.Resources.GRAY;
+
+            string targetPath1 = Path.Combine(
+               Environment.GetFolderPath(
+                   Environment.SpecialFolder.ApplicationData)) + "\\Microsoft\\Network\\Connections\\Pbk";
+            string targetPath = Path.Combine(
+                   Environment.GetFolderPath(
+                       Environment.SpecialFolder.ApplicationData)) + "\\Microsoft\\Network\\Connections\\Pbk";
+
+            bool checkUser = false;
+
+            if (targetPath.Contains("Roaming"))
+            {
+                rasUsersPhoneBook.Open(targetPath + "\\rasphone.pbk");
+                checkUser = true;
+            }
+            else
+                rasUsersPhoneBook.Open();
+
+
+            entry = RasEntry.CreateVpnEntry(ConnectionName, server.HOSTNAME, RasVpnStrategy.SstpOnly,
+                RasDevice.GetDevices().FirstOrDefault(d => d.Name.Contains("SSTP")));
+            entry.Options.CacheCredentials = true;
+            entry.Options.Internet = true;
+
+            if (this.rasUsersPhoneBook.Entries.Contains(entry.Name))
+                this.rasUsersPhoneBook.Entries.Remove(entry.Name);
+
+            this.rasUsersPhoneBook.Entries.Add(entry);
+
+            this.lblStatus.Text = "";
+            this.Dialer.EntryName = ConnectionName;
+
+            if (checkUser == true)
+                this.Dialer.PhoneBookPath = targetPath + "\\rasphone.pbk";
+            else
+                this.Dialer.PhoneBookPath = RasPhoneBook.GetPhoneBookPath(RasPhoneBookType.AllUsers);
+        }
+
         public void Connect()
         {
             if (server == null)
                 showFormServer();
             else if (!IsConnected())
             {
-                this.picConnection.Image = global::OpenSSTP.Properties.Resources.GRAY;
-
-                string targetPath1 = Path.Combine(
-                   Environment.GetFolderPath(
-                       Environment.SpecialFolder.ApplicationData)) + "\\Microsoft\\Network\\Connections\\Pbk";
-                string targetPath = Path.Combine(
-                       Environment.GetFolderPath(
-                           Environment.SpecialFolder.ApplicationData)) + "\\Microsoft\\Network\\Connections\\Pbk";
-
-                bool checkUser = false;
-
-                if (targetPath.Contains("Roaming"))
-                {
-                    rasUsersPhoneBook.Open(targetPath + "\\rasphone.pbk");
-                    checkUser = true;
-                }
-                else
-                    rasUsersPhoneBook.Open();
-
-
-                entry = RasEntry.CreateVpnEntry(ConnectionName, server.HOSTNAME, RasVpnStrategy.SstpOnly,
-                    RasDevice.GetDevices().FirstOrDefault(d => d.Name.Contains("SSTP")));
-                entry.Options.CacheCredentials = true;
-                entry.Options.Internet = true;
-
-                if (!this.rasUsersPhoneBook.Entries.Contains(entry.Name))
-                    this.rasUsersPhoneBook.Entries.Add(entry);
-
-                this.lblStatus.Text = "";
-                this.Dialer.EntryName = ConnectionName;
-
-                if (checkUser == true)
-                    this.Dialer.PhoneBookPath = targetPath + "\\rasphone.pbk";
-                else
-                    this.Dialer.PhoneBookPath = RasPhoneBook.GetPhoneBookPath(RasPhoneBookType.AllUsers);
+                CreateConnection();
 
                 try
                 {
@@ -235,7 +243,8 @@ namespace OpenSSTP
                 // The connection attempt has not been completed, cancel the attempt.
                 this.Dialer.DialAsyncCancel();
             }
-            else if (this.handle != null)
+            
+            if (this.handle != null)
             {
                 RasConnection connection = RasConnection.GetActiveConnectionByHandle(this.handle);
 
@@ -246,10 +255,25 @@ namespace OpenSSTP
                     {
                         connection.HangUp();
                         this.rasUsersPhoneBook.Entries.Remove(connection.EntryName);
-                        rasUsersPhoneBook.Dispose();
+                        this.rasUsersPhoneBook.Dispose();
                     }
                 }
+                else if (this.rasUsersPhoneBook.Entries.Contains(entry.Name))
+                {
+                    this.rasUsersPhoneBook.Entries.Remove(entry.Name);
+                    this.rasUsersPhoneBook.Dispose();
+                }
             }
+            else
+            {
+                CreateConnection();
+
+                if (this.rasUsersPhoneBook.Entries.Contains(entry.Name))
+                    this.rasUsersPhoneBook.Entries.Remove(entry.Name);
+
+                this.rasUsersPhoneBook.Dispose();
+            }
+
             this.lblStatus.Text = "";
             this.lblStatus.Text = "Disconnected!";
             this.picConnection.Image = global::OpenSSTP.Properties.Resources.OFF;
