@@ -19,8 +19,9 @@ namespace OpenSSTP
 {
     public partial class frmMain : Form
     {
-        private int CURRENT_VERSION = 101;
-
+        private string CURRENT_VERSION_NAME = "1.0.2";
+        private int CURRENT_VERSION = 102;
+        
         public const string ConnectionName = "OpenSSTP (Free Server)";
         private RasHandle handle;
         RasEntry entry;
@@ -31,6 +32,8 @@ namespace OpenSSTP
         public frmMain()
         {
             InitializeComponent();
+
+            this.Text = $"{this.Text} : v{CURRENT_VERSION_NAME}";
         }
 
         private void frmMain_Load(object sender, EventArgs e)
@@ -141,8 +144,9 @@ namespace OpenSSTP
             else
                 rasUsersPhoneBook.Open();
 
+            string hostName = server != null ? server.HOSTNAME : "vpngate.net";
 
-            entry = RasEntry.CreateVpnEntry(ConnectionName, server.HOSTNAME, RasVpnStrategy.SstpOnly,
+            entry = RasEntry.CreateVpnEntry(ConnectionName, hostName, RasVpnStrategy.SstpOnly,
                 RasDevice.GetDevices().FirstOrDefault(d => d.Name.Contains("SSTP")));
             entry.Options.CacheCredentials = true;
             entry.Options.Internet = true;

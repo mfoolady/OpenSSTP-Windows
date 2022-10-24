@@ -48,7 +48,7 @@ namespace OpenSSTP
             // picConnection
             // 
             this.picConnection.Image = global::OpenSSTP.Properties.Resources.OFF;
-            this.picConnection.Location = new System.Drawing.Point(84, 71);
+            this.picConnection.Location = new System.Drawing.Point(89, 70);
             this.picConnection.Name = "picConnection";
             this.picConnection.Size = new System.Drawing.Size(171, 173);
             this.picConnection.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -62,10 +62,10 @@ namespace OpenSSTP
             this.panel1.Controls.Add(this.lblStatus);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel1.Location = new System.Drawing.Point(0, 251);
-            this.panel1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.panel1.Margin = new System.Windows.Forms.Padding(4);
             this.panel1.Name = "panel1";
-            this.panel1.Padding = new System.Windows.Forms.Padding(9, 9, 9, 9);
-            this.panel1.Size = new System.Drawing.Size(340, 52);
+            this.panel1.Padding = new System.Windows.Forms.Padding(9);
+            this.panel1.Size = new System.Drawing.Size(349, 52);
             this.panel1.TabIndex = 1;
             // 
             // lblStatus
@@ -75,7 +75,7 @@ namespace OpenSSTP
             this.lblStatus.ForeColor = System.Drawing.Color.Silver;
             this.lblStatus.Location = new System.Drawing.Point(9, 9);
             this.lblStatus.Name = "lblStatus";
-            this.lblStatus.Size = new System.Drawing.Size(322, 34);
+            this.lblStatus.Size = new System.Drawing.Size(331, 34);
             this.lblStatus.TabIndex = 0;
             this.lblStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
@@ -88,7 +88,7 @@ namespace OpenSSTP
             this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
             this.panel2.Location = new System.Drawing.Point(0, 0);
             this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(340, 64);
+            this.panel2.Size = new System.Drawing.Size(349, 64);
             this.panel2.TabIndex = 2;
             // 
             // picFlag
@@ -108,7 +108,7 @@ namespace OpenSSTP
             this.btnSelectServer.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnSelectServer.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
             this.btnSelectServer.ForeColor = System.Drawing.Color.Silver;
-            this.btnSelectServer.Location = new System.Drawing.Point(257, 14);
+            this.btnSelectServer.Location = new System.Drawing.Point(266, 14);
             this.btnSelectServer.Name = "btnSelectServer";
             this.btnSelectServer.Padding = new System.Windows.Forms.Padding(3);
             this.btnSelectServer.Size = new System.Drawing.Size(72, 36);
@@ -140,7 +140,7 @@ namespace OpenSSTP
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Black;
-            this.ClientSize = new System.Drawing.Size(340, 303);
+            this.ClientSize = new System.Drawing.Size(349, 303);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.picConnection);
