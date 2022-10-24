@@ -55,10 +55,10 @@ namespace OpenSSTP
                 picFlag.ImageLocation = server.FLAG;
             }
 
-            _ = GetServerListAsync();
+            _ = CheckUpdateAsync();
         }
 
-        private async Task GetServerListAsync()
+        private async Task CheckUpdateAsync()
         {
             try
             {
@@ -98,6 +98,8 @@ namespace OpenSSTP
             this.picFlag.ImageLocation = server.FLAG;
 
             server.SaveToFile();
+
+            Disconnect();
         }
 
         private void frmMain_FormClosing(object sender, FormClosingEventArgs e)

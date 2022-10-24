@@ -77,7 +77,7 @@ namespace OpenSSTP
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(322, 34);
             this.lblStatus.TabIndex = 0;
-            this.lblStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblStatus.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // panel2
             // 
