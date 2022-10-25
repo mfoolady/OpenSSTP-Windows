@@ -135,15 +135,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\GRAY.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\OFF.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\ON.png" />
-  </ItemGroup>
-  <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.8">
       <Visible>False</Visible>
       <ProductName>Microsoft .NET Framework 4.8 %28x86 and x64%29</ProductName>
@@ -157,6 +148,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="icon.ico" />
+    <None Include="Resources\ON.png" />
+    <None Include="Resources\OFF.png" />
+    <None Include="Resources\GRAY.png" />
   </ItemGroup>
   <ItemGroup>
     <PublishFile Include="DotRas">

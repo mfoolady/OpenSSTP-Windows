@@ -19,8 +19,8 @@ namespace OpenSSTP
 {
     public partial class frmMain : Form
     {
-        private string CURRENT_VERSION_NAME = "1.0.2";
-        private int CURRENT_VERSION = 102;
+        private string CURRENT_VERSION_NAME = "1.0.3";
+        private int CURRENT_VERSION = 103;
         
         public const string ConnectionName = "OpenSSTP (Free Server)";
         private RasHandle handle;
