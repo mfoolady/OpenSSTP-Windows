@@ -15,13 +15,10 @@ using System.IO;
 
 namespace OpenSSTP
 {
-    internal delegate void SelectServerHandler(Server server);
-
     public partial class frmServerList : Form
     {
         internal event SelectServerHandler OnSelectServer;
         
-
         private int _previousIndex;
         private bool _sortDirection;
         List<Server> list = new List<Server>();

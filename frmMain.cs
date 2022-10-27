@@ -19,8 +19,8 @@ namespace OpenSSTP
 {
     public partial class frmMain : Form
     {
-        private string CURRENT_VERSION_NAME = "1.0.3";
-        private int CURRENT_VERSION = 103;
+        private string CURRENT_VERSION_NAME = "1.1.0";
+        private int CURRENT_VERSION = 110;
         
         public const string ConnectionName = "OpenSSTP (Free Server)";
         private RasHandle handle;
@@ -89,7 +89,8 @@ namespace OpenSSTP
 
         private void showFormServer()
         {
-            frmServerList frm = new frmServerList();
+            //frmServerList frm = new frmServerList();
+            frmListCustom frm = new frmListCustom();
             frm.OnSelectServer += Frm_OnSelectServer;
             frm.ShowDialog();
         }

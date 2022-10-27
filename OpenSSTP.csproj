@@ -87,7 +87,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BAL\Server.cs" />
+    <Compile Include="BAL\ServerItemControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="BAL\ServerItemControl.Designer.cs">
+      <DependentUpon>ServerItemControl.cs</DependentUpon>
+    </Compile>
     <Compile Include="BAL\WinVersion.cs" />
+    <Compile Include="frmListCustom.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmListCustom.Designer.cs">
+      <DependentUpon>frmListCustom.cs</DependentUpon>
+    </Compile>
     <Compile Include="frmMain.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -102,6 +114,12 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="BAL\ServerItemControl.resx">
+      <DependentUpon>ServerItemControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmListCustom.resx">
+      <DependentUpon>frmListCustom.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmMain.resx">
       <DependentUpon>frmMain.cs</DependentUpon>
     </EmbeddedResource>
