@@ -33,6 +33,11 @@ namespace OpenSSTP
         {
             InitializeComponent();
 
+            // Subscribe once for the lifetime of this dialer.
+            Dialer.Error += Dialer_Error;
+            Dialer.StateChanged += Dialer_StateChanged1;
+            Dialer.DialCompleted += Dialer_DialCompleted;
+
             this.Text = $"{this.Text} : v{CURRENT_VERSION_NAME}";
         }
 
@@ -179,10 +184,6 @@ namespace OpenSSTP
                     // Set the credentials the dialer should use.
                     this.Dialer.Credentials = new NetworkCredential("vpn", "vpn");
                     Dialer.AllowUseStoredCredentials = true;
-
-                    Dialer.Error += Dialer_Error;
-                    Dialer.StateChanged += Dialer_StateChanged1;
-                    Dialer.DialCompleted += Dialer_DialCompleted;
 
                     this.handle = this.Dialer.DialAsync();
 
