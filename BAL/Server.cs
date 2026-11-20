@@ -28,12 +28,32 @@ namespace OpenSSTP.BAL
 
         public static Server LoadConfigFromFile()
         {
-            if (File.Exists(@"config.json"))
+            if (!File.Exists(@"config.json"))
+                return null;
+
+            try
             {
                 string json = File.ReadAllText(@"config.json");
-                return JsonConvert.DeserializeObject <Server>(json);
+                var server = JsonConvert.DeserializeObject<Server>(json);
+
+                if (server == null || string.IsNullOrWhiteSpace(server.HOSTNAME))
+                    return null;
+
+                return server;
             }
-            return null;
+            catch (JsonException)
+            {
+                // Ignore an invalid local configuration and allow the user to select a server.
+                return null;
+            }
+            catch (IOException)
+            {
+                return null;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return null;
+            }
         }
 
     }

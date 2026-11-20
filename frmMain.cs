@@ -33,6 +33,11 @@ namespace OpenSSTP
         {
             InitializeComponent();
 
+            // Subscribe once for the lifetime of this dialer.
+            Dialer.Error += Dialer_Error;
+            Dialer.StateChanged += Dialer_StateChanged1;
+            Dialer.DialCompleted += Dialer_DialCompleted;
+
             this.Text = $"{this.Text} : v{CURRENT_VERSION_NAME}";
         }
 
@@ -68,6 +73,7 @@ namespace OpenSSTP
             {
                 using (var httpClient = new HttpClient())
                 {
+                    httpClient.Timeout = TimeSpan.FromSeconds(10);
                     var json = await httpClient.GetStringAsync("https://raw.githubusercontent.com/FreeSSTP/server-list/main/win_ver.json");
                     WinVersion ver = JsonConvert.DeserializeObject<WinVersion>(json);
                     if(ver != null && ver.version_code > CURRENT_VERSION)
@@ -180,10 +186,6 @@ namespace OpenSSTP
                     this.Dialer.Credentials = new NetworkCredential("vpn", "vpn");
                     Dialer.AllowUseStoredCredentials = true;
 
-                    Dialer.Error += Dialer_Error;
-                    Dialer.StateChanged += Dialer_StateChanged1;
-                    Dialer.DialCompleted += Dialer_DialCompleted;
-
                     this.handle = this.Dialer.DialAsync();
 
                     this.picConnection.Image = global::OpenSSTP.Properties.Resources.GRAY;
@@ -233,10 +235,18 @@ namespace OpenSSTP
 
         private void Dialer_Error(object sender, ErrorEventArgs e)
         {
-            RasConnection connection = RasConnection.GetActiveConnections()[0];
-            this.lblStatus.Text = connection.GetConnectionStatus().ToString();
+            var connection = RasConnection.GetActiveConnections()
+                .FirstOrDefault(c => c.EntryName == ConnectionName);
+
+            this.lblStatus.Text = connection != null
+                ? connection.GetConnectionStatus().ToString()
+                : "Connection failed before an active RAS connection was established.";
+
             this.picConnection.Image = global::OpenSSTP.Properties.Resources.OFF;
-            MessageBox.Show(e.GetException().Message);
+
+            var exception = e.GetException();
+            if (exception != null)
+                MessageBox.Show(exception.Message, "VPN connection error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         public void Disconnect()
@@ -248,39 +258,67 @@ namespace OpenSSTP
                 // The connection attempt has not been completed, cancel the attempt.
                 this.Dialer.DialAsyncCancel();
             }
-            
-            if (this.handle != null)
-            {
-                RasConnection connection = RasConnection.GetActiveConnectionByHandle(this.handle);
 
-                if (connection != null)
+            // Do not create a VPN entry just to disconnect. A connection may also
+            // have been established before this application instance was opened.
+            RasConnection connection = this.handle != null
+                ? RasConnection.GetActiveConnectionByHandle(this.handle)
+                : RasConnection.GetActiveConnections().FirstOrDefault(c => c.EntryName == ConnectionName);
+
+            if (connection != null && connection.EntryName == ConnectionName)
+                connection.HangUp();
+
+            // Remove the application-owned profile without creating a new one.
+            // If this instance did not create the entry, open the existing user
+            // phonebook only when its file is already present.
+            string profileCleanupError = null;
+            bool phoneBookAvailable = this.entry != null;
+            try
+            {
+                if (this.entry == null)
                 {
-                    // The connection has been found, disconnect it.
-                    if (connection.EntryName == ConnectionName)
+                    string phoneBookDirectory = Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                        @"Microsoft\Network\Connections\Pbk");
+                    string userPhoneBookPath = Path.Combine(phoneBookDirectory, "rasphone.pbk");
+
+                    if (phoneBookDirectory.Contains("Roaming"))
                     {
-                        connection.HangUp();
-                        this.rasUsersPhoneBook.Entries.Remove(connection.EntryName);
-                        this.rasUsersPhoneBook.Dispose();
+                        if (File.Exists(userPhoneBookPath))
+                        {
+                            this.rasUsersPhoneBook.Open(userPhoneBookPath);
+                            phoneBookAvailable = true;
+                        }
+                    }
+                    else
+                    {
+                        string allUsersPhoneBookPath = RasPhoneBook.GetPhoneBookPath(RasPhoneBookType.AllUsers);
+                        if (File.Exists(allUsersPhoneBookPath))
+                        {
+                            this.rasUsersPhoneBook.Open();
+                            phoneBookAvailable = true;
+                        }
                     }
                 }
-                else if (this.rasUsersPhoneBook.Entries.Contains(entry.Name))
-                {
-                    this.rasUsersPhoneBook.Entries.Remove(entry.Name);
-                    this.rasUsersPhoneBook.Dispose();
-                }
+
+                if (phoneBookAvailable && this.rasUsersPhoneBook.Entries.Contains(ConnectionName))
+                    this.rasUsersPhoneBook.Entries.Remove(ConnectionName);
             }
-            else
+            catch (Exception ex)
             {
-                CreateConnection();
-
-                if (this.rasUsersPhoneBook.Entries.Contains(entry.Name))
-                    this.rasUsersPhoneBook.Entries.Remove(entry.Name);
-
+                profileCleanupError = ex.Message;
+            }
+            finally
+            {
                 this.rasUsersPhoneBook.Dispose();
+                this.rasUsersPhoneBook = new RasPhoneBook();
+                this.entry = null;
             }
 
-            this.lblStatus.Text = "";
-            this.lblStatus.Text = "Disconnected!";
+            this.handle = null;
+            this.lblStatus.Text = profileCleanupError == null
+                ? "Disconnected!"
+                : "Disconnected, but the VPN profile could not be removed: " + profileCleanupError;
             this.picConnection.Image = global::OpenSSTP.Properties.Resources.OFF;
         }
 
