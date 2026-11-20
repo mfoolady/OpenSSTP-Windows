@@ -271,6 +271,7 @@ namespace OpenSSTP
             // If this instance did not create the entry, open the existing user
             // phonebook only when its file is already present.
             string profileCleanupError = null;
+            bool phoneBookAvailable = this.entry != null;
             try
             {
                 if (this.entry == null)
@@ -283,17 +284,23 @@ namespace OpenSSTP
                     if (phoneBookDirectory.Contains("Roaming"))
                     {
                         if (File.Exists(userPhoneBookPath))
+                        {
                             this.rasUsersPhoneBook.Open(userPhoneBookPath);
+                            phoneBookAvailable = true;
+                        }
                     }
                     else
                     {
                         string allUsersPhoneBookPath = RasPhoneBook.GetPhoneBookPath(RasPhoneBookType.AllUsers);
                         if (File.Exists(allUsersPhoneBookPath))
+                        {
                             this.rasUsersPhoneBook.Open();
+                            phoneBookAvailable = true;
+                        }
                     }
                 }
 
-                if (this.rasUsersPhoneBook.Entries.Contains(ConnectionName))
+                if (phoneBookAvailable && this.rasUsersPhoneBook.Entries.Contains(ConnectionName))
                     this.rasUsersPhoneBook.Entries.Remove(ConnectionName);
             }
             catch (Exception ex)
