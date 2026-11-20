@@ -4,6 +4,19 @@
 
 **Review type:** Initial static review only. The application has not been built or executed as part of this review. Findings below should be verified in a Windows build/test environment before behavior-changing fixes are merged.
 
+## Follow-up implementation status
+
+The following source-level fixes have since been committed to this branch. They are **not yet runtime-verified** because no Windows/.NET Framework build or RAS integration test has been run.
+
+| Finding | Source change | Verification status |
+|---|---|---|
+| Disconnect creates a profile while disconnected | Disconnect no longer calls connection setup; it searches for the active app connection, and attempts to remove an existing app profile without creating one. | Static source review only; test on Windows. |
+| RAS error handler assumes an active connection | It now searches for the app's connection safely and displays the dialer exception when available. | Static source review only; test failed dial attempts. |
+| Remote/cache server-list JSON is not validated | Remote and cached lists are validated for usable SSTP entries; cache fallback and a user-visible unavailable state were added. | Static source review only; test malformed/empty/offline cases. |
+| Local selected-server JSON is not validated | Invalid or inaccessible config files now return no selected server, allowing the user to choose one. | Static source review only; test malformed and inaccessible config files. |
+| RAS event handlers are attached repeatedly | Event handlers are subscribed once in the form constructor rather than on each connect attempt. | Static source review only; test repeated connect/disconnect cycles. |
+
+
 ## Findings
 
 ### High — Disconnect performs setup work when there is no dialer handle
