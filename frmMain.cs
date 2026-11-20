@@ -73,6 +73,7 @@ namespace OpenSSTP
             {
                 using (var httpClient = new HttpClient())
                 {
+                    httpClient.Timeout = TimeSpan.FromSeconds(10);
                     var json = await httpClient.GetStringAsync("https://raw.githubusercontent.com/FreeSSTP/server-list/main/win_ver.json");
                     WinVersion ver = JsonConvert.DeserializeObject<WinVersion>(json);
                     if(ver != null && ver.version_code > CURRENT_VERSION)
