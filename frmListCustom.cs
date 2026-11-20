@@ -34,30 +34,75 @@ namespace OpenSSTP
         {
             _ = GetServerListAsync();
         }
+        private List<Server> ParseServerList(string json)
+        {
+            var servers = JsonConvert.DeserializeObject<List<Server>>(json);
+            if (servers == null)
+                throw new JsonSerializationException("The server list is empty or has an invalid format.");
+
+            return servers
+                .Where(x => x != null && x.PORT == 443 && !string.IsNullOrWhiteSpace(x.HOSTNAME))
+                .ToList();
+        }
+
         private async Task GetServerListAsync()
         {
+            prgLoading.Visible = true;
+
             try
             {
                 using (var httpClient = new HttpClient())
                 {
-                    prgLoading.Visible = true;
+                    httpClient.Timeout = TimeSpan.FromSeconds(15);
                     var json = await httpClient.GetStringAsync("https://raw.githubusercontent.com/FreeSSTP/server-list/main/Records.json");
-                    list = JsonConvert.DeserializeObject<List<Server>>(json).Where(x => x.PORT == 443).ToList();
-                    File.WriteAllText(@"Records.json", JsonConvert.SerializeObject(list));
-                    fillGrid(list);
+                    var remoteServers = ParseServerList(json);
+
+                    if (remoteServers.Count == 0)
+                        throw new JsonSerializationException("The remote server list contains no usable SSTP servers.");
+
+                    list = remoteServers;
+
+                    // A cache write failure should not prevent use of a valid remote list.
+                    try
+                    {
+                        File.WriteAllText(@"Records.json", JsonConvert.SerializeObject(list));
+                    }
+                    catch (IOException)
+                    {
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                    }
                 }
             }
-            catch
+            catch (Exception remoteException)
             {
-                if (File.Exists(@"Records.json"))
+                try
                 {
-                    string json = File.ReadAllText(@"Records.json");
-                    list = JsonConvert.DeserializeObject<List<Server>>(json).ToList();
-                    fillGrid(list);
+                    if (!File.Exists(@"Records.json"))
+                        throw new FileNotFoundException("No local server-list cache is available.");
+
+                    string cachedJson = File.ReadAllText(@"Records.json");
+                    list = ParseServerList(cachedJson);
+
+                    if (list.Count == 0)
+                        throw new JsonSerializationException("The cached server list contains no usable SSTP servers.");
+                }
+                catch (Exception cacheException)
+                {
+                    list = new List<Server>();
+                    MessageBox.Show(
+                        "Unable to load the server list from the internet or local cache.\n\n" +
+                        "Remote error: " + remoteException.Message + "\n" +
+                        "Cache error: " + cacheException.Message,
+                        "Server list unavailable",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
                 }
             }
             finally
             {
+                fillGrid(list);
                 prgLoading.Visible = false;
             }
         }
