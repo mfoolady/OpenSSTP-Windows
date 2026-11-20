@@ -267,12 +267,39 @@ namespace OpenSSTP
             if (connection != null && connection.EntryName == ConnectionName)
                 connection.HangUp();
 
-            // Remove only the application-owned entry, and only when this instance
-            // has opened its phonebook. Server details are stored separately.
-            if (this.entry != null && this.rasUsersPhoneBook.Entries.Contains(ConnectionName))
-                this.rasUsersPhoneBook.Entries.Remove(ConnectionName);
+            // Remove the application-owned profile without creating a new one.
+            // If this instance did not create the entry, open the existing user
+            // phonebook only when its file is already present.
+            try
+            {
+                if (this.entry == null)
+                {
+                    string phoneBookDirectory = Path.Combine(
+                        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                        @"Microsoft\Network\Connections\Pbk");
+                    string userPhoneBookPath = Path.Combine(phoneBookDirectory, "rasphone.pbk");
 
-            if (this.entry != null)
+                    if (phoneBookDirectory.Contains("Roaming"))
+                    {
+                        if (File.Exists(userPhoneBookPath))
+                            this.rasUsersPhoneBook.Open(userPhoneBookPath);
+                    }
+                    else
+                    {
+                        string allUsersPhoneBookPath = RasPhoneBook.GetPhoneBookPath(RasPhoneBookType.AllUsers);
+                        if (File.Exists(allUsersPhoneBookPath))
+                            this.rasUsersPhoneBook.Open();
+                    }
+                }
+
+                if (this.rasUsersPhoneBook.Entries.Contains(ConnectionName))
+                    this.rasUsersPhoneBook.Entries.Remove(ConnectionName);
+            }
+            catch (Exception ex)
+            {
+                this.lblStatus.Text = "Disconnected, but the VPN profile could not be removed: " + ex.Message;
+            }
+            finally
             {
                 this.rasUsersPhoneBook.Dispose();
                 this.rasUsersPhoneBook = new RasPhoneBook();
