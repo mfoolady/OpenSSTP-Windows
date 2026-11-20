@@ -270,6 +270,7 @@ namespace OpenSSTP
             // Remove the application-owned profile without creating a new one.
             // If this instance did not create the entry, open the existing user
             // phonebook only when its file is already present.
+            string profileCleanupError = null;
             try
             {
                 if (this.entry == null)
@@ -297,7 +298,7 @@ namespace OpenSSTP
             }
             catch (Exception ex)
             {
-                this.lblStatus.Text = "Disconnected, but the VPN profile could not be removed: " + ex.Message;
+                profileCleanupError = ex.Message;
             }
             finally
             {
@@ -307,7 +308,9 @@ namespace OpenSSTP
             }
 
             this.handle = null;
-            this.lblStatus.Text = "Disconnected!";
+            this.lblStatus.Text = profileCleanupError == null
+                ? "Disconnected!"
+                : "Disconnected, but the VPN profile could not be removed: " + profileCleanupError;
             this.picConnection.Image = global::OpenSSTP.Properties.Resources.OFF;
         }
 
