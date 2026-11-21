@@ -97,6 +97,7 @@
       <DependentUpon>ServerItemControl.cs</DependentUpon>
     </Compile>
     <Compile Include="BAL\WinVersion.cs" />
+    <Compile Include="frmManualServers.cs" />
     <Compile Include="frmListCustom.cs">
       <SubType>Form</SubType>
     </Compile>
