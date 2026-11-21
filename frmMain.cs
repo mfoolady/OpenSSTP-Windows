@@ -212,6 +212,8 @@ namespace OpenSSTP
                 }
                 catch (Exception ex)
                 {
+                    // Remove a partially-created RAS profile if setup or dialing fails.
+                    try { Disconnect(); } catch { }
                     this.picConnection.Image = global::OpenSSTP.Properties.Resources.OFF;
                     this.lblStatus.Text = "Error: " + ex.ToString();
                 }
