@@ -17,6 +17,16 @@ The following source-level fixes have since been committed to this branch. They 
 | RAS event handlers are attached repeatedly | Event handlers are subscribed once in the form constructor rather than on each connect attempt. | Static source review only; test repeated connect/disconnect cycles. |
 
 
+### Manual-server foundation (new implementation; not runtime-verified)
+
+The branch now contains a `ManualServer` model, a `ManualServerStore` backed by a per-Windows-user DPAPI-protected password, and a WinForms dialog for adding, editing, and deleting saved manual-server entries. The dialog is accessible from the free-server list. These entries are stored under the current user's LocalAppData directory and are not yet selectable for VPN connection; the existing dial path still uses the free-server model and its current credentials. The feature must not be described as end-to-end manual VPN support until selection and RAS credential routing are implemented and tested.
+
+Static review notes:
+- Password encryption uses `DataProtectionScope.CurrentUser`; migration to another Windows account or machine is not supported by this storage format.
+- The UI displays a decrypted password while editing a saved entry; the textbox masks it, but the plaintext exists in process memory as required to edit/re-save it.
+- Malformed store data and DPAPI decryption failures are surfaced by the manager dialog; recovery/backup behavior should be considered before release.
+- The form and storage have not been compiled or exercised on Windows.
+
 ## Findings
 
 ### High — Disconnect performs setup work when there is no dialer handle
