@@ -88,6 +88,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BAL\Server.cs" />
+    <Compile Include="BAL\ManualServer.cs" />
+    <Compile Include="BAL\ManualServerStore.cs" />
     <Compile Include="BAL\ServerItemControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
