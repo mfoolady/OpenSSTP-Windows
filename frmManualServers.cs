@@ -18,9 +18,12 @@ namespace OpenSSTP
         private readonly Button btnSave = new Button();
         private readonly Button btnNew = new Button();
         private readonly Button btnDelete = new Button();
+        private readonly Button btnUse = new Button();
         private readonly Label lblStatus = new Label();
         private IList<ManualServer> servers = new List<ManualServer>();
         private Guid? selectedId;
+
+        public ManualServer SelectedServer { get; private set; }
 
         public frmManualServers()
         {
@@ -72,6 +75,11 @@ namespace OpenSSTP
             btnDelete.SetBounds(182, 342, 75, 30);
             btnDelete.Click += Delete_Click;
             AddControl(btnDelete);
+
+            btnUse.Text = "Use selected";
+            btnUse.SetBounds(95, 342, 82, 30);
+            btnUse.Click += UseSelected_Click;
+            AddControl(btnUse);
 
             btnSave.Text = "Save";
             btnSave.SetBounds(520, 300, 75, 32);
@@ -199,6 +207,21 @@ namespace OpenSSTP
                 MessageBox.Show("Unable to save the server.\n\n" + ex.Message,
                     "Manual servers", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void UseSelected_Click(object sender, EventArgs e)
+        {
+            var item = lstServers.SelectedItem as ServerListItem;
+            if (item == null)
+            {
+                MessageBox.Show("Select a saved server first.", "Manual servers",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            SelectedServer = item.Server;
+            DialogResult = DialogResult.OK;
+            Close();
         }
 
         private void Delete_Click(object sender, EventArgs e)
