@@ -25,7 +25,7 @@ Static review notes:
 - Password encryption uses `DataProtectionScope.CurrentUser`; migration to another Windows account or machine is not supported by this storage format.
 - Passwords are not properties of `VpnServerProfile`; the dial path retrieves the protected password by the manual server ID immediately before creating the `NetworkCredential`.
 - The selected manual endpoint is held in memory for the current application session; unlike free-server selection, it is not yet restored automatically after an application restart.
-- Non-default manual ports are appended to the RAS endpoint string as `hostname:port`. This format and IPv6/custom-port behavior must be verified against Windows SSTP/RAS on supported Windows versions.
+- Manual entries are currently restricted to port 443. Windows RAS documents the SSTP endpoint as a DNS name or IP address and does not expose a portable custom-port parameter in the DotRas entry factory; custom-port support is intentionally deferred rather than relying on an unverified `hostname:port` convention.
 - A failed connection setup attempts to remove a partially-created application RAS profile.
 - DPAPI decryption failures and malformed store data are surfaced; recovery/backup behavior should be considered before release.
 - These changes have not been compiled or exercised on Windows. Do not treat manual VPN support as production-verified until the build and real SSTP connection tests pass.
