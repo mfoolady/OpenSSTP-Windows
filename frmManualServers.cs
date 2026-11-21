@@ -50,11 +50,12 @@ namespace OpenSSTP
             txtHost.SetBounds(275, 91, 320, 25);
             AddControl(txtHost);
 
-            AddLabel("Port", 275, 125);
+            AddLabel("Port (Windows SSTP: 443)", 275, 125);
             numPort.SetBounds(275, 146, 110, 25);
             numPort.Minimum = 1;
             numPort.Maximum = 65535;
             numPort.Value = 443;
+            numPort.Enabled = false;
             AddControl(numPort);
 
             AddLabel("Username", 275, 180);
