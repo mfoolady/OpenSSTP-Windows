@@ -113,7 +113,7 @@ namespace OpenSSTP
             server = profile.FreeServer;
 
             lblLocation.Text = profile.DisplayName;
-            lblHost.Text = profile.Hostname + (profile.Port == 443 ? string.Empty : ":" + profile.Port);
+            lblHost.Text = profile.Hostname;
             picFlag.ImageLocation = profile.Type == VpnServerType.Free ? profile.Flag : null;
 
             // Preserve the existing free-server selection behavior. Manual-server
@@ -163,8 +163,6 @@ namespace OpenSSTP
                 rasUsersPhoneBook.Open();
 
             string hostName = selectedProfile != null ? selectedProfile.Hostname : "vpngate.net";
-            if (selectedProfile != null && selectedProfile.Type == VpnServerType.Manual && selectedProfile.Port != 443)
-                hostName += ":" + selectedProfile.Port;
 
             entry = RasEntry.CreateVpnEntry(ConnectionName, hostName, RasVpnStrategy.SstpOnly,
                 RasDevice.GetDevices().FirstOrDefault(d => d.Name.Contains("SSTP")));
