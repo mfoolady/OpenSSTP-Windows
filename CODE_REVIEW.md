@@ -98,7 +98,7 @@ Both forms implement remote server-list download, local caching, and JSON deseri
 
 - Clean Debug and Release builds on Windows with the .NET Framework 4.8 Developer Pack.
 - Verify behavior with no active VPN connection, an existing application connection, an unrelated active RAS connection, and a failed/cancelled dial attempt.
-- Verify selecting, connecting, disconnecting, and reconnecting to a saved manual server; test wrong credentials, deleted server records, DPAPI failure, default/custom ports, hostnames, IPv4, and IPv6.
+- Verify selecting, connecting, disconnecting, and reconnecting to a saved manual server; test wrong credentials, deleted server records, DPAPI failure, enforcement of port 443, hostnames, IPv4, and IPv6.
 - Verify server-list loading with valid, empty, malformed, and unavailable remote/cache data.
 - Verify the intended ClickOnce or other publishing/signing workflow.
 - Add automated tests where feasible; Windows RAS integration also requires manual testing on supported Windows versions.
