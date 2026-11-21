@@ -88,11 +88,10 @@ Both forms implement remote server-list download, local caching, and JSON deseri
 
 ## Suggested implementation order
 
-1. Add safe RAS connection enumeration and error handling; define profile lifecycle behavior.
-2. Complete and verify unified free/manual server selection and credential routing (implemented on this branch; Windows validation pending).
-2. Harden remote and cached JSON loading with explicit validation and useful error states.
-3. Define HTTP timeout/cancellation and event/resource lifetimes.
-4. Reconcile version metadata and signing/build configuration.
+1. Verify the RAS lifecycle fixes and unified free/manual credential routing on Windows (implemented on this branch; runtime validation pending).
+2. Finish hardening the legacy server-list implementation or remove it after confirming it is unused.
+3. Add HTTP cancellation and complete dialer/resource lifetime management.
+4. Reconcile version metadata and verify the ClickOnce signing/publishing workflow.
 5. Consolidate duplicate UI/data-loading paths after behavior is covered by tests.
 
 ## Verification still required
