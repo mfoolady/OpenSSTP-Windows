@@ -28,6 +28,7 @@ namespace OpenSSTP
         RasPhoneBook rasUsersPhoneBook = new RasPhoneBook();
         RasDialer Dialer = new RasDialer();
         private BAL.Server server;
+        private VpnServerProfile selectedProfile;
 
         public frmMain()
         {
@@ -44,6 +45,8 @@ namespace OpenSSTP
         private void frmMain_Load(object sender, EventArgs e)
         {
             this.server = BAL.Server.LoadConfigFromFile();
+            if (server != null)
+                selectedProfile = VpnServerProfile.FromFreeServer(server);
 
             if (server != null)
             {
@@ -101,14 +104,22 @@ namespace OpenSSTP
             frm.ShowDialog();
         }
 
-        private void Frm_OnSelectServer(BAL.Server server)
+        private void Frm_OnSelectServer(VpnServerProfile profile)
         {
-            this.server = server;
-            this.lblLocation.Text = server.LOCATION;
-            this.lblHost.Text = server.HOSTNAME;
-            this.picFlag.ImageLocation = server.FLAG;
+            if (profile == null)
+                return;
 
-            server.SaveToFile();
+            selectedProfile = profile;
+            server = profile.FreeServer;
+
+            lblLocation.Text = profile.DisplayName;
+            lblHost.Text = profile.Hostname + (profile.Port == 443 ? string.Empty : ":" + profile.Port);
+            picFlag.ImageLocation = profile.Type == VpnServerType.Free ? profile.Flag : null;
+
+            // Preserve the existing free-server selection behavior. Manual-server
+            // metadata and credentials are already persisted by ManualServerStore.
+            if (profile.Type == VpnServerType.Free && profile.FreeServer != null)
+                profile.FreeServer.SaveToFile();
 
             Disconnect();
         }
@@ -151,7 +162,9 @@ namespace OpenSSTP
             else
                 rasUsersPhoneBook.Open();
 
-            string hostName = server != null ? server.HOSTNAME : "vpngate.net";
+            string hostName = selectedProfile != null ? selectedProfile.Hostname : "vpngate.net";
+            if (selectedProfile != null && selectedProfile.Type == VpnServerType.Manual && selectedProfile.Port != 443)
+                hostName += ":" + selectedProfile.Port;
 
             entry = RasEntry.CreateVpnEntry(ConnectionName, hostName, RasVpnStrategy.SstpOnly,
                 RasDevice.GetDevices().FirstOrDefault(d => d.Name.Contains("SSTP")));
@@ -174,16 +187,23 @@ namespace OpenSSTP
 
         public void Connect()
         {
-            if (server == null)
+            if (selectedProfile == null)
                 showFormServer();
             else if (!IsConnected())
             {
-                CreateConnection();
-
                 try
                 {
-                    // Set the credentials the dialer should use.
-                    this.Dialer.Credentials = new NetworkCredential("vpn", "vpn");
+                    CreateConnection();
+
+                    // Resolve secrets only when dialing. The shared profile contains
+                    // endpoint metadata, never a plaintext password.
+                    string username = selectedProfile.Type == VpnServerType.Manual
+                        ? selectedProfile.Username
+                        : "vpn";
+                    string password = selectedProfile.Type == VpnServerType.Manual
+                        ? ManualServerStore.GetPassword(Guid.Parse(selectedProfile.Id))
+                        : "vpn";
+                    this.Dialer.Credentials = new NetworkCredential(username, password);
                     Dialer.AllowUseStoredCredentials = true;
 
                     this.handle = this.Dialer.DialAsync();
