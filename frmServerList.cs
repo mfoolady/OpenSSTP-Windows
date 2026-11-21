@@ -130,7 +130,7 @@ namespace OpenSSTP
                 };
 
                 if (MessageBox.Show($"Change the VPN connection to \n{server.LOCATION} ::: \"{server.HOSTNAME}\"?", "Change the VPN", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes){
-                    OnSelectServer?.Invoke(server);
+                    OnSelectServer?.Invoke(VpnServerProfile.FromFreeServer(server));
                     this.Close();
                 }
             }

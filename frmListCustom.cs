@@ -15,7 +15,7 @@ using System.IO;
 
 namespace OpenSSTP
 {
-    internal delegate void SelectServerHandler(Server server);
+    internal delegate void SelectServerHandler(VpnServerProfile profile);
 
     public partial class frmListCustom : Form
     {
@@ -123,13 +123,38 @@ namespace OpenSSTP
             this.flowLayoutPanel1.Visible = true;
         }
 
+        private void btnManageManualServers_Click(object sender, EventArgs e)
+        {
+            using (var form = new frmManualServers())
+            {
+                if (form.ShowDialog(this) == DialogResult.OK && form.SelectedServer != null)
+                {
+                    var manualServer = form.SelectedServer;
+                    string displayName = string.IsNullOrWhiteSpace(manualServer.Name)
+                        ? manualServer.Hostname
+                        : manualServer.Name;
+
+                    if (MessageBox.Show(
+                        "Use this manual VPN server?\n\n" + displayName + " (" +
+                        manualServer.Hostname + ":" + manualServer.Port + ")",
+                        "Select manual server",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Question) == DialogResult.Yes)
+                    {
+                        OnSelectServer?.Invoke(VpnServerProfile.FromManualServer(manualServer));
+                        Close();
+                    }
+                }
+            }
+        }
+
         private void btnSelectServer_Click(object sender, EventArgs e)
         {
             Server server = (Server)(sender as Button).Tag;
 
             if (MessageBox.Show($"Change the VPN connection to \n{server.LOCATION} ::: \"{server.HOSTNAME}\"?", "Change the VPN", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                OnSelectServer?.Invoke(server);
+                OnSelectServer?.Invoke(VpnServerProfile.FromFreeServer(server));
                 this.Close();
             }
         }
