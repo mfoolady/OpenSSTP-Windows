@@ -36,41 +36,31 @@ Static review notes:
 
 **Location:** `frmMain.cs`, `frmMain_Load()` and `Disconnect()`
 
-When startup detects that the application is not connected, `frmMain_Load()` calls `Disconnect()`. In the branch where `handle` is null, `Disconnect()` calls `CreateConnection()`, which opens a phonebook, creates a VPN entry, and then removes that entry. This is unnecessary work on the normal disconnected startup path and can fail if the expected SSTP device or phonebook is unavailable.
-
-**Recommended direction:** Make disconnect a state-only operation: cancel an in-progress dial attempt if needed, find and hang up only the application's actual active connection, and avoid creating a VPN entry as part of disconnect. Define and test the intended profile-retention behavior before changing phonebook deletion.
+**Status: addressed in this branch (static review only).** `Disconnect()` no longer calls `CreateConnection()`; it cancels a pending dial, looks up only the application's named RAS connection, and removes an existing application profile when the phonebook is available. Windows testing is still required for disconnected startup, active connections, and phonebook permissions.
 
 ### High — Error handler assumes an active RAS connection exists
 
 **Location:** `frmMain.cs`, `Dialer_Error()`
 
-The handler indexes `RasConnection.GetActiveConnections()[0]` without checking whether the returned collection contains an item. An error raised before a connection is established can therefore cause a second exception while handling the original error.
-
-**Recommended direction:** Check for an active connection matching `ConnectionName`; handle an empty collection safely and report the original dialer exception regardless of connection state.
+**Status: addressed in this branch (static review only).** The handler now searches for a connection matching `ConnectionName`, handles the no-connection case, and reports the original dialer exception. Verify failed and cancelled dial attempts on Windows.
 
 ### High — Server-list JSON and fallback data are not validated
 
 **Locations:** `frmListCustom.cs`, `GetServerListAsync()`; `frmServerList.cs`, `GetServerListAsync()`; `BAL/Server.cs`
 
-The remote response is deserialized and immediately used with LINQ. A null result, malformed JSON, or unexpected data can throw. The catch path then reads and deserializes the local cache and immediately calls `ToList()`, which can fail in the same way. The broad catch also hides whether the network request, parsing, or file write failed.
-
-**Recommended direction:** Validate that deserialization produced a non-null list, validate required server fields before displaying or saving entries, isolate remote-fetch and cache-read errors, and show a useful offline/error state when neither source is usable.
+**Status: partially addressed.** `frmListCustom` and `BAL.Server.LoadConfigFromFile()` validate deserialized data and provide cache fallback/error handling. The legacy `frmServerList` implementation remains and should be removed or brought to the same validation standard after confirming whether it is still used.
 
 ### Medium — HTTP requests have no explicit timeout or cancellation policy
 
 **Locations:** `frmMain.cs`, `CheckUpdateAsync()`; `frmListCustom.cs` and `frmServerList.cs`, `GetServerListAsync()`
 
-The code uses `HttpClient.GetStringAsync()` without an application-specific timeout or cancellation path. A slow or unavailable endpoint can leave the UI waiting for a long time.
-
-**Recommended direction:** Define a bounded request timeout and cancellation behavior appropriate to the UI lifecycle. Keep network operations asynchronous and surface non-sensitive diagnostics.
+**Status: partially addressed.** Explicit 10-second and 15-second timeouts exist in the update check and active server-list form. Cancellation tied to form lifetime is not implemented, and the legacy `frmServerList` path should be reviewed if retained.
 
 ### Medium — Dialer event handlers are added on every connect attempt
 
 **Location:** `frmMain.cs`, `Connect()`
 
-The `Error`, `StateChanged`, and `DialCompleted` handlers are attached each time `Connect()` starts a dial. They are not detached in the shown lifecycle. Repeated attempts may cause duplicate callbacks and retain references longer than intended.
-
-**Recommended direction:** Subscribe once for the dialer's lifetime, or pair every subscription with deterministic unsubscription. Dispose the dialer and phonebook resources according to a clearly defined lifecycle.
+**Status: addressed in this branch (static review only).** The three handlers are subscribed once in the form constructor. Repeated connect/disconnect cycles still need Windows runtime testing; full dialer disposal/lifetime cleanup can be handled separately.
 
 ### Medium — Application version values are inconsistent
 
