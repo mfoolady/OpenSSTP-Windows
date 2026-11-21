@@ -1,4 +1,4 @@
-name: Build
+name: Build and release
 
 on:
   push:
@@ -8,6 +8,9 @@ on:
   pull_request:
     branches:
       - main
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -27,3 +30,35 @@ jobs:
 
       - name: Build Release
         run: msbuild OpenSSTP.sln /m /p:Configuration=Release /p:SignManifests=false
+
+      - name: Package application
+        shell: pwsh
+        run: |
+          $output = "bin/Release"
+          if (-not (Test-Path $output)) {
+            throw "Build output directory was not created."
+          }
+          $files = Get-ChildItem $output -File
+          if ($files.Count -eq 0) {
+            throw "Build output directory is empty."
+          }
+          Compress-Archive -Path "$output/*" -DestinationPath "OpenSSTP.1.2.0.zip" -Force
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenSSTP-1.2.0
+          path: OpenSSTP.1.2.0.zip
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish GitHub release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.2.0
+          target_commitish: ${{ github.sha }}
+          name: OpenSSTP 1.2.0
+          generate_release_notes: true
+          make_latest: true
+          files: OpenSSTP.1.2.0.zip
