@@ -17,15 +17,18 @@ The following source-level fixes have since been committed to this branch. They 
 | RAS event handlers are attached repeatedly | Event handlers are subscribed once in the form constructor rather than on each connect attempt. | Static source review only; test repeated connect/disconnect cycles. |
 
 
-### Manual-server foundation (new implementation; not runtime-verified)
+### Manual-server selection and connection routing (implemented; not runtime-verified)
 
-The branch now contains a `ManualServer` model, a `ManualServerStore` backed by a per-Windows-user DPAPI-protected password, and a WinForms dialog for adding, editing, and deleting saved manual-server entries. The dialog is accessible from the free-server list. These entries are stored under the current user's LocalAppData directory and are not yet selectable for VPN connection; the existing dial path still uses the free-server model and its current credentials. The feature must not be described as end-to-end manual VPN support until selection and RAS credential routing are implemented and tested.
+The branch now includes a credential-free `VpnServerProfile` abstraction shared by free and manual endpoints. The manual-server manager can return a selected saved server; the server-list dialog confirms that selection and sends it through the same selection event used by free servers. `frmMain` builds the RAS entry from the selected profile and resolves manual credentials from `ManualServerStore` only when dialing. Free servers retain the existing `vpn/vpn` credentials and local selected-server configuration behavior.
 
 Static review notes:
 - Password encryption uses `DataProtectionScope.CurrentUser`; migration to another Windows account or machine is not supported by this storage format.
-- The UI displays a decrypted password while editing a saved entry; the textbox masks it, but the plaintext exists in process memory as required to edit/re-save it.
-- Malformed store data and DPAPI decryption failures are surfaced by the manager dialog; recovery/backup behavior should be considered before release.
-- The form and storage have not been compiled or exercised on Windows.
+- Passwords are not properties of `VpnServerProfile`; the dial path retrieves the protected password by the manual server ID immediately before creating the `NetworkCredential`.
+- The selected manual endpoint is held in memory for the current application session; unlike free-server selection, it is not yet restored automatically after an application restart.
+- Non-default manual ports are appended to the RAS endpoint string as `hostname:port`. This format and IPv6/custom-port behavior must be verified against Windows SSTP/RAS on supported Windows versions.
+- A failed connection setup attempts to remove a partially-created application RAS profile.
+- DPAPI decryption failures and malformed store data are surfaced; recovery/backup behavior should be considered before release.
+- These changes have not been compiled or exercised on Windows. Do not treat manual VPN support as production-verified until the build and real SSTP connection tests pass.
 
 ## Findings
 
@@ -96,6 +99,7 @@ Both forms implement remote server-list download, local caching, and JSON deseri
 ## Suggested implementation order
 
 1. Add safe RAS connection enumeration and error handling; define profile lifecycle behavior.
+2. Complete and verify unified free/manual server selection and credential routing (implemented on this branch; Windows validation pending).
 2. Harden remote and cached JSON loading with explicit validation and useful error states.
 3. Define HTTP timeout/cancellation and event/resource lifetimes.
 4. Reconcile version metadata and signing/build configuration.
@@ -105,6 +109,7 @@ Both forms implement remote server-list download, local caching, and JSON deseri
 
 - Clean Debug and Release builds on Windows with the .NET Framework 4.8 Developer Pack.
 - Verify behavior with no active VPN connection, an existing application connection, an unrelated active RAS connection, and a failed/cancelled dial attempt.
+- Verify selecting, connecting, disconnecting, and reconnecting to a saved manual server; test wrong credentials, deleted server records, DPAPI failure, default/custom ports, hostnames, IPv4, and IPv6.
 - Verify server-list loading with valid, empty, malformed, and unavailable remote/cache data.
 - Verify the intended ClickOnce or other publishing/signing workflow.
 - Add automated tests where feasible; Windows RAS integration also requires manual testing on supported Windows versions.
