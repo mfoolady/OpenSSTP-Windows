@@ -22,8 +22,7 @@ namespace OpenSSTP.BAL
         public bool IsValid()
         {
             return !string.IsNullOrWhiteSpace(Hostname)
-                && Port >= 1
-                && Port <= 65535
+                && Port == 443
                 && !string.IsNullOrWhiteSpace(Username);
         }
     }
