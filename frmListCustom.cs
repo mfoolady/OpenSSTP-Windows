@@ -123,6 +123,12 @@ namespace OpenSSTP
             this.flowLayoutPanel1.Visible = true;
         }
 
+        private void btnManageManualServers_Click(object sender, EventArgs e)
+        {
+            using (var form = new frmManualServers())
+                form.ShowDialog(this);
+        }
+
         private void btnSelectServer_Click(object sender, EventArgs e)
         {
             Server server = (Server)(sender as Button).Tag;
