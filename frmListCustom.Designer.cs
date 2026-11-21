@@ -31,6 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmListCustom));
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.prgLoading = new System.Windows.Forms.ProgressBar();
+            this.btnManageManualServers = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // flowLayoutPanel1
@@ -45,6 +46,20 @@
             this.flowLayoutPanel1.TabIndex = 0;
             this.flowLayoutPanel1.WrapContents = false;
             // 
+            // btnManageManualServers
+            //
+            this.btnManageManualServers.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnManageManualServers.BackColor = System.Drawing.Color.DarkSlateGray;
+            this.btnManageManualServers.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnManageManualServers.ForeColor = System.Drawing.Color.Gainsboro;
+            this.btnManageManualServers.Location = new System.Drawing.Point(246, 8);
+            this.btnManageManualServers.Name = "btnManageManualServers";
+            this.btnManageManualServers.Size = new System.Drawing.Size(180, 28);
+            this.btnManageManualServers.TabIndex = 3;
+            this.btnManageManualServers.Text = "Manage Manual Servers";
+            this.btnManageManualServers.UseVisualStyleBackColor = false;
+            this.btnManageManualServers.Click += new System.EventHandler(this.btnManageManualServers_Click);
+            //
             // prgLoading
             // 
             this.prgLoading.Location = new System.Drawing.Point(125, 215);
@@ -59,6 +74,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Black;
             this.ClientSize = new System.Drawing.Size(434, 511);
+            this.Controls.Add(this.btnManageManualServers);
             this.Controls.Add(this.prgLoading);
             this.Controls.Add(this.flowLayoutPanel1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
@@ -75,5 +91,6 @@
 
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
         private System.Windows.Forms.ProgressBar prgLoading;
+        private System.Windows.Forms.Button btnManageManualServers;
     }
 }
